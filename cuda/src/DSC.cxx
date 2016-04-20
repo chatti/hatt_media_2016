@@ -1,21 +1,21 @@
-#include "DASH.h"
+#include "DSC.h"
 #include <sstream>
 
-cudaError_t EntryCostFunctionDASH_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T);
-cudaError_t EntryCostFunctionGDASH_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T);
-cudaError_t EntryCostFunctionDASH_BiPlane(float* d_pc, float* d_M1, float* d_M2, float* d_cost, float* h_cost, float* finalCost, int B, int T);
-cudaError_t EntrySetupTextureDASH_X1(cudaArray* dI, cudaChannelFormatDesc chDesc);
-cudaError_t EntrySetupTextureDASH_Gx1(cudaArray* dI, cudaChannelFormatDesc chDesc);
-cudaError_t EntrySetupTextureDASH_Gy1(cudaArray* dI, cudaChannelFormatDesc chDesc);
-cudaError_t EntrySetupTextureDASH_X2(cudaArray* dI, cudaChannelFormatDesc chDesc);
-cudaError_t EntrySetConstantDataDASH(float* camera1, float* camera2, float pcsize);
+cudaError_t EntryCostFunctionDSC_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T);
+cudaError_t EntryCostFunctionGDSC_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T);
+cudaError_t EntryCostFunctionDSC_BiPlane(float* d_pc, float* d_M1, float* d_M2, float* d_cost, float* h_cost, float* finalCost, int B, int T);
+cudaError_t EntrySetupTextureDSC_X1(cudaArray* dI, cudaChannelFormatDesc chDesc);
+cudaError_t EntrySetupTextureDSC_Gx1(cudaArray* dI, cudaChannelFormatDesc chDesc);
+cudaError_t EntrySetupTextureDSC_Gy1(cudaArray* dI, cudaChannelFormatDesc chDesc);
+cudaError_t EntrySetupTextureDSC_X2(cudaArray* dI, cudaChannelFormatDesc chDesc);
+cudaError_t EntrySetConstantDataDSC(float* camera1, float* camera2, float pcsize);
 cudaError_t EntryTextureTest(float *dpc, float* dT, int B, int T);
 
-//cudaError_t EntryCostFunctionDASH2(float* dPC, float* phi, float* dcost, int N, float* cost, float* finalCost);
-//cudaError_t EntrySetupTextureDASH(cudaArray* dI, cudaChannelFormatDesc chDesc);
-//cudaError_t EntrySetConstantDataDASH(float* camera, float* pcParams, float* phi);
+//cudaError_t EntryCostFunctionDSC2(float* dPC, float* phi, float* dcost, int N, float* cost, float* finalCost);
+//cudaError_t EntrySetupTextureDSC(cudaArray* dI, cudaChannelFormatDesc chDesc);
+//cudaError_t EntrySetConstantDataDSC(float* camera, float* pcParams, float* phi);
 
-DASH::DASH(){
+DSC::DSC(){
 	
 	cpuStatus=0;
 	//Reset and Initialize the GPU
@@ -69,7 +69,7 @@ DASH::DASH(){
 
 }
 
-DASH::~DASH(){
+DSC::~DSC(){
 	free(h_xray1);
 	free(h_xray2);
     free(h_xrayGx1);
@@ -92,17 +92,17 @@ DASH::~DASH(){
     cudaFree(d_M2);
 }
 
-int DASH::GetNumXray()
+int DSC::GetNumXray()
 {
     return numXray;
 }
 
-void DASH::SetMetric(int m)
+void DSC::SetMetric(int m)
 {
     metric=m;
 }
 
-float DASH::ComputeDASHCostFunction()
+float DSC::ComputeDSCCostFunction()
 {
 
     if(metric==1)
@@ -110,13 +110,13 @@ float DASH::ComputeDASHCostFunction()
         if(numXray==1)
         {
 
-            cudaStatus = EntryCostFunctionDASH_MonoPlane(d_pcloud, d_M1, d_cost, h_cost, h_finalCost, B, T);
+            cudaStatus = EntryCostFunctionDSC_MonoPlane(d_pcloud, d_M1, d_cost, h_cost, h_finalCost, B, T);
             return h_finalCost[0];
         }
         else if(numXray==2)
         {
             //Not enabled yet
-            //cudaStatus = EntryCostFunctionDASH_BiPlane(d_pcloud, d_M1,d_M2, d_cost, h_cost, h_finalCost, B, T);
+            //cudaStatus = EntryCostFunctionDSC_BiPlane(d_pcloud, d_M1,d_M2, d_cost, h_cost, h_finalCost, B, T);
             //return h_finalCost[0];
         }
         else
@@ -130,13 +130,13 @@ float DASH::ComputeDASHCostFunction()
     {
         if(numXray==1)
         {
-            cudaStatus = EntryCostFunctionGDASH_MonoPlane(d_pcloud, d_M1, d_cost, h_cost, h_finalCost, B, T);
+            cudaStatus = EntryCostFunctionGDSC_MonoPlane(d_pcloud, d_M1, d_cost, h_cost, h_finalCost, B, T);
             return h_finalCost[0];
         }
         else if(numXray==2)
         {
             //Not enabled yet
-            //cudaStatus = EntryCostFunctionDASH_BiPlane(d_pcloud, d_M1,d_M2, d_cost, h_cost, h_finalCost, B, T);
+            //cudaStatus = EntryCostFunctionDSC_BiPlane(d_pcloud, d_M1,d_M2, d_cost, h_cost, h_finalCost, B, T);
             //return h_finalCost[0];
         }
         else
@@ -150,7 +150,7 @@ float DASH::ComputeDASHCostFunction()
 }
 
 
-void DASH::StartUpGPU()
+void DSC::StartUpGPU()
 {
 	cudaStatus = cudaSetDevice(0);
 	if (cudaStatus != cudaSuccess){printf("InitGPU: Setting the Device to 0 failed!\n");return;}
@@ -158,7 +158,7 @@ void DASH::StartUpGPU()
 	if (cudaStatus != cudaSuccess){printf("InitGPU: Resetting the Device to 0 failed!\n");return;}
 }
 
-void DASH::SetCamera1Params(float f, float W, float H, float sx, float sy, float iso, float* phi)
+void DSC::SetCamera1Params(float f, float W, float H, float sx, float sy, float iso, float* phi)
 {	
 	h_camera1[0]=W; h_camera1[1]=H;
 	h_camera1[2]=sx;h_camera1[3]=sy;
@@ -169,7 +169,7 @@ void DASH::SetCamera1Params(float f, float W, float H, float sx, float sy, float
 	}
 }
 
-void DASH::SetCamera2Params(float f, float W, float H, float sx, float sy, float iso, float* phi)
+void DSC::SetCamera2Params(float f, float W, float H, float sx, float sy, float iso, float* phi)
 {	
 	h_camera2[0]=W; h_camera2[1]=H;
 	h_camera2[2]=sx;h_camera2[3]=sy;
@@ -180,7 +180,7 @@ void DASH::SetCamera2Params(float f, float W, float H, float sx, float sy, float
 	}
 }
 
-void DASH::SetTransform(float tx, float ty, float tz, float rx, float ry, float rz)
+void DSC::SetTransform(float tx, float ty, float tz, float rx, float ry, float rz)
 {
     h_transform[0]=tx;
     h_transform[1]=ty;
@@ -190,7 +190,7 @@ void DASH::SetTransform(float tx, float ty, float tz, float rx, float ry, float 
     h_transform[5]=rz;
 }
 
-void DASH::SetInitialTransform(float tx, float ty, float tz, float rx, float ry, float rz)
+void DSC::SetInitialTransform(float tx, float ty, float tz, float rx, float ry, float rz)
 {
     h_init[0]=tx;
     h_init[1]=ty;
@@ -200,12 +200,12 @@ void DASH::SetInitialTransform(float tx, float ty, float tz, float rx, float ry,
     h_init[5]=rz;
 }
 
-void DASH::SetPCloudParams(float N)
+void DSC::SetPCloudParams(float N)
 {
 	pcloudSize = N;
 }
 
-void DASH::ReadXray1(std::string filename){
+void DSC::ReadXray1(std::string filename){
     int W = (int)h_camera1[0];
     int H = (int)h_camera1[1];
     free(h_xray1);
@@ -214,7 +214,7 @@ void DASH::ReadXray1(std::string filename){
 	TransferXray1ToGPU();
 }
 
-void DASH::ReadXrayGx1(std::string filename){
+void DSC::ReadXrayGx1(std::string filename){
     int W = (int)h_camera1[0];
     int H = (int)h_camera1[1];
     free(h_xrayGx1);
@@ -223,7 +223,7 @@ void DASH::ReadXrayGx1(std::string filename){
     TransferXray1ToGPU();
 }
 
-void DASH::ReadXrayGy1(std::string filename){
+void DSC::ReadXrayGy1(std::string filename){
     int W = (int)h_camera1[0];
     int H = (int)h_camera1[1];
     free(h_xrayGy1);
@@ -232,7 +232,7 @@ void DASH::ReadXrayGy1(std::string filename){
     TransferXray1ToGPU();
 }
 
-void DASH::ReadXray2(std::string filename){
+void DSC::ReadXray2(std::string filename){
     int W = (int)h_camera2[0];
     int H = (int)h_camera2[1];
     free(h_xray2);
@@ -241,7 +241,7 @@ void DASH::ReadXray2(std::string filename){
 	TransferXray2ToGPU();
 }
 
-void DASH::ReadXrayGx2(std::string filename){
+void DSC::ReadXrayGx2(std::string filename){
     int W = (int)h_camera2[0];
     int H = (int)h_camera2[1];
     free(h_xrayGx2);
@@ -250,7 +250,7 @@ void DASH::ReadXrayGx2(std::string filename){
     TransferXray2ToGPU();
 }
 
-void DASH::ReadXrayGy2(std::string filename){
+void DSC::ReadXrayGy2(std::string filename){
     int W = (int)h_camera2[0];
     int H = (int)h_camera2[1];
     free(h_xrayGy2);
@@ -259,7 +259,7 @@ void DASH::ReadXrayGy2(std::string filename){
     TransferXray2ToGPU();
 }
 
-void DASH::ReadPCloud(std::string filename){
+void DSC::ReadPCloud(std::string filename){
     free(h_pcloud);
     int N = (int)pcloudSize;
     h_pcloud = (float*)malloc(7*N*sizeof(float));
@@ -279,14 +279,14 @@ void DASH::ReadPCloud(std::string filename){
 	TransferPCloudToGPU();
 }
 
-void DASH::ReadGCloud(std::string filename){
+void DSC::ReadGCloud(std::string filename){
     free(h_gcloud);
     h_gcloud = (float*)malloc(3*(int)pcloudSize*sizeof(float));
     ReadImage(filename, h_gcloud, 3*(int)pcloudSize, 1.0);
 	TransferGCloudToGPU();
 }
 
-void DASH::TransferXray1ToGPU(){
+void DSC::TransferXray1ToGPU(){
 	
 	int W=(int)h_camera1[0];
 	int H=(int)h_camera1[1];
@@ -302,19 +302,19 @@ void DASH::TransferXray1ToGPU(){
     cudaStatus = cudaMallocArray(&d_xrayGy1, &channelDescXray,W,H);
     if(cudaStatus!=cudaSuccess){printf("Allocating the x-ray y-gradient image failed!\n");return;}
 
-    cudaStatus = EntrySetupTextureDASH_X1(d_xray1, channelDescXray);
+    cudaStatus = EntrySetupTextureDSC_X1(d_xray1, channelDescXray);
     if (cudaStatus != cudaSuccess){printf("Binding the X-ray image 1 to the GPU failed!\n");}
 
 	cudaStatus = cudaMemcpyToArray(d_xray1, 0,0, h_xray1, W*H*sizeof(float), cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess){printf("Transfering the X-ray image 1 to the GPU failed!\n");}
 
-    cudaStatus = EntrySetupTextureDASH_Gx1(d_xrayGx1, channelDescXray);
+    cudaStatus = EntrySetupTextureDSC_Gx1(d_xrayGx1, channelDescXray);
     if (cudaStatus != cudaSuccess){printf("Binding the X-ray image 1 to the GPU failed!\n");}
 
     cudaStatus = cudaMemcpyToArray(d_xrayGx1, 0,0, h_xrayGx1, W*H*sizeof(float), cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess){printf("Transfering the X-ray image 1 to the GPU failed!\n");}
 
-    cudaStatus = EntrySetupTextureDASH_Gy1(d_xrayGy1, channelDescXray);
+    cudaStatus = EntrySetupTextureDSC_Gy1(d_xrayGy1, channelDescXray);
     if (cudaStatus != cudaSuccess){printf("Binding the X-ray image 1 to the GPU failed!\n");}
 
     cudaStatus = cudaMemcpyToArray(d_xrayGy1, 0,0, h_xrayGy1, W*H*sizeof(float), cudaMemcpyHostToDevice);
@@ -322,7 +322,7 @@ void DASH::TransferXray1ToGPU(){
 	
 }
 
-void DASH::TransferXray2ToGPU(){
+void DSC::TransferXray2ToGPU(){
 	
 	int W=(int)h_camera2[0];
 	int H=(int)h_camera2[1];
@@ -336,7 +336,7 @@ void DASH::TransferXray2ToGPU(){
 	//cudaStatus = cudaMallocArray(&d_xrayGy1, &channelDescXray,W,H);
 	//if(cudaStatus!=cudaSuccess){printf("Allocating the x-ray y-gradient image failed!\n");return;}
 
-    cudaStatus = EntrySetupTextureDASH_X2(d_xray2, channelDescXray);
+    cudaStatus = EntrySetupTextureDSC_X2(d_xray2, channelDescXray);
     if (cudaStatus != cudaSuccess){printf("Binding the X-ray image 2 to the GPU failed!\n");}
 
 	cudaStatus = cudaMemcpyToArray(d_xray2, 0,0, h_xray2, W*H*sizeof(float), cudaMemcpyHostToDevice);
@@ -344,19 +344,19 @@ void DASH::TransferXray2ToGPU(){
 	
 }
 
-void DASH::TransferConstantsToGPU()
+void DSC::TransferConstantsToGPU()
 {
-	cudaStatus = EntrySetConstantDataDASH(h_camera1, h_camera2, pcloudSize);
+	cudaStatus = EntrySetConstantDataDSC(h_camera1, h_camera2, pcloudSize);
 }
 
-void DASH::TransferPCloudToGPU()
+void DSC::TransferPCloudToGPU()
 {
 	int N = (int)pcloudSize;
     cudaStatus = cudaMemcpy(d_pcloud, h_pcloud, 7*N*sizeof(float), cudaMemcpyHostToDevice);
 	if(cudaStatus!=cudaSuccess){printf("Transfering the point cloud to the device failed!\n");return;}
 }
 
-void DASH::TransferGCloudToGPU()
+void DSC::TransferGCloudToGPU()
 {
     //Disabled
     //int N = (int)pcloudSize;
@@ -364,7 +364,7 @@ void DASH::TransferGCloudToGPU()
     //if(cudaStatus!=cudaSuccess){printf("Transfering the gradient cloud to the device failed!\n");return;}
 }
 
-bool DASH::isOK(){
+bool DSC::isOK(){
 	if(cudaStatus == cudaSuccess & cpuStatus==0)
 	{return true;}
 	else if(cudaStatus != cudaSuccess)
@@ -380,7 +380,7 @@ bool DASH::isOK(){
 }
 
 //This function works on row-major 2d matrices stored as 1D arrays
-void DASH::MM44(float (&MO)[16], float (&ML)[16], float (&MR)[16])
+void DSC::MM44(float (&MO)[16], float (&ML)[16], float (&MR)[16])
 {
     MO[0]  = ML[0]*MR[0]  + ML[1]*MR[4]  + ML[2]*MR[8]   + ML[3]*MR[12];
     MO[1]  = ML[0]*MR[1]  + ML[1]*MR[5]  + ML[2]*MR[9]   + ML[3]*MR[13];
@@ -403,7 +403,7 @@ void DASH::MM44(float (&MO)[16], float (&ML)[16], float (&MR)[16])
     MO[15] = ML[12]*MR[3] + ML[13]*MR[7] + ML[14]*MR[11] + ML[15]*MR[15];
 }
 
-void DASH::PrintM44(float (&M)[16])
+void DSC::PrintM44(float (&M)[16])
 {
     int cnt=0;
     printf("_____________________________\n");
@@ -419,7 +419,7 @@ void DASH::PrintM44(float (&M)[16])
     printf("_____________________________\n");
 }
 
-void DASH::SetEye(float (&M)[16])
+void DSC::SetEye(float (&M)[16])
 {
     for(int k=0; k<16; k++)
     {
@@ -434,14 +434,14 @@ void DASH::SetEye(float (&M)[16])
     }
 }
 
-void DASH::SetSpatialTranslation(float (&M)[16],float* tform)
+void DSC::SetSpatialTranslation(float (&M)[16],float* tform)
 {
     M[3]=tform[0];
     M[7]=tform[1];
     M[11]=tform[2];
 }
 
-void DASH::SetSpatialRotation(float (&M)[16],float* tform)
+void DSC::SetSpatialRotation(float (&M)[16],float* tform)
 {
     float cx = cos(tform[3]);float sx = sin(tform[3]);
     float cy = cos(-tform[4]);float sy = sin(-tform[4]);
@@ -452,7 +452,7 @@ void DASH::SetSpatialRotation(float (&M)[16],float* tform)
     M[8] = cx*sy;          M[9] =  sx;    M[10] = cx*cy;
 }
 
-void DASH::UpdateTransformMatrix()
+void DSC::UpdateTransformMatrix()
 {
     SetSpatialTranslation(h_T,h_transform);
     SetSpatialRotation(h_R,h_transform);
@@ -478,7 +478,7 @@ void DASH::UpdateTransformMatrix()
 }
 
 
-void DASH::InitAllMatrices()
+void DSC::InitAllMatrices()
 {
     float cR[16];
     float cT[16];
@@ -529,7 +529,7 @@ void DASH::InitAllMatrices()
 
 }
 
-void DASH::ReadParameterFile(std::string filename)
+void DSC::ReadParameterFile(std::string filename)
 {
     std::ifstream infile(filename.c_str());
     if(!infile){printf("Couldn't open file: %s\n",filename.c_str()); cpuStatus=-1;return;}
@@ -645,7 +645,7 @@ void DASH::ReadParameterFile(std::string filename)
     TransferConstantsToGPU();
 }
 
-void DASH::ReadImage(std::string filename, float* img, int W, int H)
+void DSC::ReadImage(std::string filename, float* img, int W, int H)
 {
     FILE *fp;
     fp = fopen(filename.c_str(), "r");
@@ -659,7 +659,7 @@ void DASH::ReadImage(std::string filename, float* img, int W, int H)
 }
 
 
-void DASH::WriteVolume(std::string filename, float* vol, int sx, int sy, int sz)
+void DSC::WriteVolume(std::string filename, float* vol, int sx, int sy, int sz)
 {
     FILE *fp;
     fp = fopen(filename.c_str(), "w");
@@ -672,7 +672,7 @@ void DASH::WriteVolume(std::string filename, float* vol, int sx, int sy, int sz)
     return;
 }
 
-void DASH::WriteImage(std::string filename, float* img, int W, int H)
+void DSC::WriteImage(std::string filename, float* img, int W, int H)
 {
     FILE *fp;
     fp = fopen(filename.c_str(), "w");

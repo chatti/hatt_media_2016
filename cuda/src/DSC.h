@@ -1,5 +1,5 @@
-#ifndef DASH_H
-#define DASH_H
+#ifndef DSC_H
+#define DSC_H
 
 #include <iostream>
 #include <stdlib.h>
@@ -11,7 +11,7 @@
 #include <cuda_runtime.h>
 
 
-class DASH
+class DSC
 {
     int numXray;
 	int T;
@@ -87,8 +87,8 @@ class DASH
 	int cpuStatus;
 
 public:
-	DASH();
-	~DASH();
+	DSC();
+	~DSC();
 
 
 	void StartUpGPU();
@@ -113,7 +113,7 @@ public:
 	void TransferPCloudToGPU();
 	void TransferGCloudToGPU();
 	void TransferConstantsToGPU();
-    float ComputeDASHCostFunction();
+    float ComputeDSCCostFunction();
     void WriteImage(std::string filename, float* img, int W, int H);
     void WriteVolume(std::string filename, float* vol, int sx, int sy, int sz);
     void ReadImage(std::string filename, float* img, int W, int H);

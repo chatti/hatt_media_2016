@@ -6,24 +6,24 @@
 #include <fstream>
 #include <vector>
 #include <cuda_runtime.h>
-#include "DASH.h"
-#include "DASHCostFunction.h"
+#include "DSC.h"
+#include "DSCCostFunction.h"
 #include <vnl/algo/vnl_lbfgs.h>  //limited memory BFGS algorithm (general unconstrained optimization)
 #include <vnl/algo/vnl_lbfgsb.h> //constrained BFGS
 #include <vnl/algo/vnl_amoeba.h> //Nelder-mead
 #include <vnl/algo/vnl_powell.h> //Powell
-FloatMatrixType Amoeba(DASHCostFunction &cf,int iter);
-FloatMatrixType Powell(DASHCostFunction &cf,double stepsize);
-FloatMatrixType LBFGS(DASHCostFunction &cf);
-FloatMatrixType Biplane(DASH &X, int method);
-FloatMatrixType Monoplane(DASH &X, int method);
+FloatMatrixType Amoeba(DSCCostFunction &cf,int iter);
+FloatMatrixType Powell(DSCCostFunction &cf,double stepsize);
+FloatMatrixType LBFGS(DSCCostFunction &cf);
+FloatMatrixType Biplane(DSC &X, int method);
+FloatMatrixType Monoplane(DSC &X, int method);
 void WriteHistory(std::string logFileName, FloatMatrixType optimizationLog);
 
 int main(int argc, char* args[] ){
 
     if(argc < 5)
     {
-        printf("Proper usage: dash [parameterfile] [logfile] [Metric (1-2)] [OptMethod (1-3)]\n");
+        printf("Proper usage: dsc [parameterfile] [logfile] [Metric (1-2)] [OptMethod (1-3)]\n");
         return -1;
     }
 
@@ -39,7 +39,7 @@ int main(int argc, char* args[] ){
     ss << args[4]; ss >> method;  ss.str(""); ss.clear();
 
 
-    DASH X;
+    DSC X;
     X.ReadParameterFile(pfile);
     if(!X.isOK()){
         return -1;
@@ -62,11 +62,11 @@ int main(int argc, char* args[] ){
     return 0;
 }
 
-FloatMatrixType Biplane(DASH &X,int method)
+FloatMatrixType Biplane(DSC &X,int method)
 {
-    DASHCostFunction cf12XXX6(3);cf12XXX6.SetDASH(&X);
-    DASHCostFunction cf12X456(5);cf12X456.SetDASH(&X);
-    DASHCostFunction cf123456(6);cf123456.SetDASH(&X);
+    DSCCostFunction cf12XXX6(3);cf12XXX6.SetDSC(&X);
+    DSCCostFunction cf12X456(5);cf12X456.SetDSC(&X);
+    DSCCostFunction cf123456(6);cf123456.SetDSC(&X);
 
     printf("Cost Function Initialized\n");
 
@@ -198,11 +198,11 @@ FloatMatrixType Biplane(DASH &X,int method)
 }
 
 
-FloatMatrixType Monoplane(DASH &X, int method)
+FloatMatrixType Monoplane(DSC &X, int method)
 {
-    DASHCostFunction cf12XXX6(3);cf12XXX6.SetDASH(&X);
-    DASHCostFunction cf12X456(5);cf12X456.SetDASH(&X);
-    DASHCostFunction cf123456(6);cf123456.SetDASH(&X);
+    DSCCostFunction cf12XXX6(3);cf12XXX6.SetDSC(&X);
+    DSCCostFunction cf12X456(5);cf12X456.SetDSC(&X);
+    DSCCostFunction cf123456(6);cf123456.SetDSC(&X);
 
     printf("Cost Function Initialized\n");
 
@@ -337,7 +337,7 @@ FloatMatrixType Monoplane(DASH &X, int method)
 
 
 
-FloatMatrixType Amoeba(DASHCostFunction &cf, int iter)
+FloatMatrixType Amoeba(DSCCostFunction &cf, int iter)
 {
     vnl_amoeba Minimizer(cf);
 
@@ -353,7 +353,7 @@ FloatMatrixType Amoeba(DASHCostFunction &cf, int iter)
     return cf.GetHistory();
 }
 
-FloatMatrixType LBFGS(DASHCostFunction &cf)
+FloatMatrixType LBFGS(DSCCostFunction &cf)
 {
     vnl_lbfgs Minimizer(cf);
 
@@ -367,7 +367,7 @@ FloatMatrixType LBFGS(DASHCostFunction &cf)
     return cf.GetHistory();
 }
 
-FloatMatrixType Powell(DASHCostFunction &cf, double stepsize)
+FloatMatrixType Powell(DSCCostFunction &cf, double stepsize)
 {
     vnl_powell Minimizer(&cf);
 

@@ -1,4 +1,4 @@
-#include "DASH.h"
+#include "DSC.h"
 #include <vnl/vnl_vector.h>
 #include <vnl/vnl_vector_fixed.h>
 #include <vnl/vnl_cost_function.h>
@@ -7,12 +7,12 @@ using namespace std;
 
 typedef std::vector<std::vector<float> > FloatMatrixType;
 
-class DASHCostFunction : public vnl_cost_function
+class DSCCostFunction : public vnl_cost_function
 {
 public:
 
 
-    DASH* X;
+    DSC* X;
     FloatMatrixType history;
     bool recordHistory;
     vnl_vector_fixed<float,6>  init;
@@ -23,7 +23,7 @@ public:
 
 	int numParams;
 	
-    DASHCostFunction(const int NumVars) : vnl_cost_function(NumVars)
+    DSCCostFunction(const int NumVars) : vnl_cost_function(NumVars)
 	{
 		numParams = (int)NumVars;
         recordHistory=true;
@@ -48,7 +48,7 @@ public:
 
         X->SetTransform(transform(0),transform(1),transform(2),transform(3),transform(4),transform(5));
         X->UpdateTransformMatrix();
-        returnValue = (double)X->ComputeDASHCostFunction();
+        returnValue = (double)X->ComputeDSCCostFunction();
 
         if(recordHistory){
             std::vector<float> tmp;
@@ -67,7 +67,7 @@ public:
 		fdgradf(x, dx);
 	}
 
-    void SetDASH(DASH* inptr)
+    void SetDSC(DSC* inptr)
     {
         X = inptr;
     }

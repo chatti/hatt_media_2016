@@ -24,7 +24,7 @@ texture<float, 2, cudaReadModeElementType> texGx2;
 texture<float, 2, cudaReadModeElementType> texGy1;
 texture<float, 2, cudaReadModeElementType> texGy2;
 
-__global__ void DASH_Mono(float* PC, float* T, float* cost)
+__global__ void DSC_Mono(float* PC, float* T, float* cost)
 {
 
 	__shared__ float shrPxV[TPB];
@@ -76,7 +76,7 @@ __global__ void DASH_Mono(float* PC, float* T, float* cost)
 	if (i<1)   { cost[blockIdx.x] = shrPxV[i]+shrPxV[i+1]; }	
 }
 
-__global__ void GDASH_Mono(float* PC, float* T, float* cost)
+__global__ void GDSC_Mono(float* PC, float* T, float* cost)
 {
 
     __shared__ float shrPxV[TPB];
@@ -139,7 +139,7 @@ __global__ void GDASH_Mono(float* PC, float* T, float* cost)
 }
 
 
-__global__ void DASH_Bi(float* PC, float* T1, float* T2, float* cost)
+__global__ void DSC_Bi(float* PC, float* T1, float* T2, float* cost)
 {
 
     __shared__ float shrPxV[TPB];
@@ -229,12 +229,12 @@ __global__ void DASH_Bi(float* PC, float* T1, float* T2, float* cost)
 
 
 
-cudaError_t EntryCostFunctionDASH_BiPlane(float* d_pc, float* d_M1, float* d_M2, float* d_cost, float* h_cost, float* finalCost, int B, int T)
+cudaError_t EntryCostFunctionDSC_BiPlane(float* d_pc, float* d_M1, float* d_M2, float* d_cost, float* h_cost, float* finalCost, int B, int T)
 {
     float N = (float)(B*T);
     cudaError_t status;
 
-    DASH_Bi<<<B,T>>>(d_pc, d_M1,d_M2, d_cost);
+    DSC_Bi<<<B,T>>>(d_pc, d_M1,d_M2, d_cost);
 	status = cudaGetLastError();
     if (status != cudaSuccess){printf("Problem dash kernel (biplane)!\n");return status;}
 	
@@ -251,12 +251,12 @@ cudaError_t EntryCostFunctionDASH_BiPlane(float* d_pc, float* d_M1, float* d_M2,
 	return status;
 }
 
-cudaError_t EntryCostFunctionDASH_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T)
+cudaError_t EntryCostFunctionDSC_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T)
 {
     float N = (float)(B*T);
     cudaError_t status;
 
-    DASH_Mono<<<B,T>>>(d_pc, d_M, d_cost);
+    DSC_Mono<<<B,T>>>(d_pc, d_M, d_cost);
     status = cudaGetLastError();
     if (status != cudaSuccess){printf("Problem dash kernel!\n");return status;}
 
@@ -273,12 +273,12 @@ cudaError_t EntryCostFunctionDASH_MonoPlane(float* d_pc, float* d_M, float* d_co
     return status;
 }
 
-cudaError_t EntryCostFunctionGDASH_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T)
+cudaError_t EntryCostFunctionGDSC_MonoPlane(float* d_pc, float* d_M, float* d_cost, float* h_cost, float* finalCost, int B, int T)
 {
     float N = (float)(B*T);
     cudaError_t status;
 
-    GDASH_Mono<<<B,T>>>(d_pc, d_M, d_cost);
+    GDSC_Mono<<<B,T>>>(d_pc, d_M, d_cost);
     status = cudaGetLastError();
     if (status != cudaSuccess){printf("Problem Gdash kernel!\n");return status;}
 
@@ -295,7 +295,7 @@ cudaError_t EntryCostFunctionGDASH_MonoPlane(float* d_pc, float* d_M, float* d_c
     return status;
 }
 
-cudaError_t EntrySetupTextureDASH_X1(cudaArray* dI, cudaChannelFormatDesc chDesc)
+cudaError_t EntrySetupTextureDSC_X1(cudaArray* dI, cudaChannelFormatDesc chDesc)
 {
 	cudaError_t status;
 
@@ -309,7 +309,7 @@ cudaError_t EntrySetupTextureDASH_X1(cudaArray* dI, cudaChannelFormatDesc chDesc
 	return status;
 }
 
-cudaError_t EntrySetupTextureDASH_Gx1(cudaArray* dI, cudaChannelFormatDesc chDesc)
+cudaError_t EntrySetupTextureDSC_Gx1(cudaArray* dI, cudaChannelFormatDesc chDesc)
 {
 	cudaError_t status;
 
@@ -323,7 +323,7 @@ cudaError_t EntrySetupTextureDASH_Gx1(cudaArray* dI, cudaChannelFormatDesc chDes
 	return status;
 }
 
-cudaError_t EntrySetupTextureDASH_Gy1(cudaArray* dI, cudaChannelFormatDesc chDesc)
+cudaError_t EntrySetupTextureDSC_Gy1(cudaArray* dI, cudaChannelFormatDesc chDesc)
 {
 	cudaError_t status;
 
@@ -337,7 +337,7 @@ cudaError_t EntrySetupTextureDASH_Gy1(cudaArray* dI, cudaChannelFormatDesc chDes
 	return status;
 }
 
-cudaError_t EntrySetupTextureDASH_X2(cudaArray* dI, cudaChannelFormatDesc chDesc)
+cudaError_t EntrySetupTextureDSC_X2(cudaArray* dI, cudaChannelFormatDesc chDesc)
 {
 	cudaError_t status;
 
@@ -351,7 +351,7 @@ cudaError_t EntrySetupTextureDASH_X2(cudaArray* dI, cudaChannelFormatDesc chDesc
 	return status;
 }
 
-cudaError_t EntrySetupTextureDASH_Gx2(cudaArray* dI, cudaChannelFormatDesc chDesc)
+cudaError_t EntrySetupTextureDSC_Gx2(cudaArray* dI, cudaChannelFormatDesc chDesc)
 {
 	cudaError_t status;
 
@@ -365,7 +365,7 @@ cudaError_t EntrySetupTextureDASH_Gx2(cudaArray* dI, cudaChannelFormatDesc chDes
 	return status;
 }
 
-cudaError_t EntrySetupTextureDASH_Gy2(cudaArray* dI, cudaChannelFormatDesc chDesc)
+cudaError_t EntrySetupTextureDSC_Gy2(cudaArray* dI, cudaChannelFormatDesc chDesc)
 {
 	cudaError_t status;
 
@@ -379,7 +379,7 @@ cudaError_t EntrySetupTextureDASH_Gy2(cudaArray* dI, cudaChannelFormatDesc chDes
 	return status;
 }
 
-cudaError_t EntrySetConstantDataDASH(float* camera1, float* camera2, float pcsize)
+cudaError_t EntrySetConstantDataDSC(float* camera1, float* camera2, float pcsize)
 {
 	cudaError_t status;
 
