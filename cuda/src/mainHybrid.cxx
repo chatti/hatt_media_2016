@@ -6,50 +6,50 @@
 #include <fstream>
 #include <vector>
 #include <cuda_runtime.h>
-#include "DASH.h"
-#include "DASHCostFunction.h"
+#include "DSC.h"
+#include "DSCCostFunction.h"
 #include "PatchRayCast.h"
 #include "PatchRayCastCostFunction.h"
 #include <vnl/algo/vnl_lbfgs.h>  //limited memory BFGS algorithm (general unconstrained optimization)
 #include <vnl/algo/vnl_lbfgsb.h> //constrained BFGS
 #include <vnl/algo/vnl_amoeba.h> //Nelder-mead
 #include <vnl/algo/vnl_powell.h> //Powell
-FloatMatrixType Amoeba_DASH(DASHCostFunction &cf,int iter);
-FloatMatrixType Powell_DASH(DASHCostFunction &cf,double stepsize);
-FloatMatrixType LBFGS_DASH(DASHCostFunction &cf);
+FloatMatrixType Amoeba_DSC(DSCCostFunction &cf,int iter);
+FloatMatrixType Powell_DSC(DSCCostFunction &cf,double stepsize);
+FloatMatrixType LBFGS_DSC(DSCCostFunction &cf);
 
 FloatMatrixType Amoeba_PRC(PatchRayCastCostFunction &cf,int iter);
 FloatMatrixType Powell_PRC(PatchRayCastCostFunction &cf,double stepsize);
 FloatMatrixType LBFGS_PRC(PatchRayCastCostFunction &cf);
 
-FloatMatrixType Biplane(  DASH &X, PatchRayCast &Y, int method);
-FloatMatrixType Monoplane(DASH &X, PatchRayCast &Y, int method);
+FloatMatrixType Biplane(  DSC &X, PatchRayCast &Y, int method);
+FloatMatrixType Monoplane(DSC &X, PatchRayCast &Y, int method);
 void WriteHistory(std::string logFileName, FloatMatrixType optimizationLog);
 
 int main(int argc, char* args[] ){
 
     if(argc < 6)
     {
-        printf("Proper usage: dash [parameterfile1] [parameterfile2] [logfile] [Metric (1-2)] [OptMethod (1-3)]\n");
+        printf("Proper usage: hybrid [parameterfile1] [parameterfile2] [logfile] [Metric (1-2)] [OptMethod (1-3)]\n");
         return -1;
     }
 
-    std::string pfileDASH;
+    std::string pfileDSC;
     std::string pfilePRC;
     std::string logfile;
     int method = 0;
     int metric = 0;
 
     std::stringstream ss;
-    ss << args[1]; ss >> pfileDASH; ss.str(""); ss.clear();
+    ss << args[1]; ss >> pfileDSC; ss.str(""); ss.clear();
     ss << args[2]; ss >> pfilePRC;  ss.str(""); ss.clear();
     ss << args[3]; ss >> logfile;   ss.str(""); ss.clear();
     ss << args[4]; ss >> metric;    ss.str(""); ss.clear();
     ss << args[5]; ss >> method;    ss.str(""); ss.clear();
 
-    printf("Initializing DASH\n\n");
-    DASH X;
-    X.ReadParameterFile(pfileDASH);
+    printf("Initializing DSC\n\n");
+    DSC X;
+    X.ReadParameterFile(pfileDSC);
     if(!X.isOK()){
         return -1;
     }
@@ -78,11 +78,11 @@ int main(int argc, char* args[] ){
     return 0;
 }
 
-FloatMatrixType Biplane(DASH &X, PatchRayCast &Y, int method)
+FloatMatrixType Biplane(DSC &X, PatchRayCast &Y, int method)
 {
-    DASHCostFunction cf12XXX6(3);cf12XXX6.SetDASH(&X);
-    DASHCostFunction cf12X456(5);cf12X456.SetDASH(&X);
-    DASHCostFunction cf123456(6);cf123456.SetDASH(&X);
+    DSCCostFunction cf12XXX6(3);cf12XXX6.SetDSC(&X);
+    DSCCostFunction cf12X456(5);cf12X456.SetDSC(&X);
+    DSCCostFunction cf123456(6);cf123456.SetDSC(&X);
 
     printf("Cost Function Initialized\n");
 
@@ -173,27 +173,27 @@ FloatMatrixType Biplane(DASH &X, PatchRayCast &Y, int method)
 
     if( method == 1)
     {
-        log = Amoeba_DASH(cf12XXX6, 100); logs.push_back(log);
+        log = Amoeba_DSC(cf12XXX6, 100); logs.push_back(log);
         cf12X456.SetInit(cf12XXX6.GetTransform());
-        log = Amoeba_DASH(cf12X456, 250); logs.push_back(log);
+        log = Amoeba_DSC(cf12X456, 250); logs.push_back(log);
         cf123456.SetInit(cf12X456.GetTransform());
-        log = Amoeba_DASH(cf123456, 1000); logs.push_back(log);
+        log = Amoeba_DSC(cf123456, 1000); logs.push_back(log);
     }
     else if(method == 2)
     {
-        log = Powell_DASH(cf12XXX6, 2.5); logs.push_back(log);
+        log = Powell_DSC(cf12XXX6, 2.5); logs.push_back(log);
         cf12X456.SetInit(cf12XXX6.GetTransform());
-        log = Powell_DASH(cf12X456, 0.025); logs.push_back(log);
+        log = Powell_DSC(cf12X456, 0.025); logs.push_back(log);
         cf123456.SetInit(cf12X456.GetTransform());
-        log = Powell_DASH(cf123456, 0.010); logs.push_back(log);
+        log = Powell_DSC(cf123456, 0.010); logs.push_back(log);
     }
     else if(method == 3)
     {
-        log = LBFGS_DASH(cf12XXX6); logs.push_back(log);
+        log = LBFGS_DSC(cf12XXX6); logs.push_back(log);
         cf12X456.SetInit(cf12XXX6.GetTransform());
-        log = LBFGS_DASH(cf12X456); logs.push_back(log);
+        log = LBFGS_DSC(cf12X456); logs.push_back(log);
         cf123456.SetInit(cf12X456.GetTransform());
-        log = LBFGS_DASH(cf123456); logs.push_back(log);
+        log = LBFGS_DSC(cf123456); logs.push_back(log);
     }
     //////////////////////////
     cudaEventRecord(stop);
@@ -231,10 +231,10 @@ FloatMatrixType Biplane(DASH &X, PatchRayCast &Y, int method)
 }
 
 
-FloatMatrixType Monoplane(DASH &X, PatchRayCast &Y, int method)
+FloatMatrixType Monoplane(DSC &X, PatchRayCast &Y, int method)
 {
-    DASHCostFunction         CF1(3);CF1.SetDASH(&X);
-    DASHCostFunction         CF2(5);CF2.SetDASH(&X);
+    DSCCostFunction         CF1(3);CF1.SetDSC(&X);
+    DSCCostFunction         CF2(5);CF2.SetDSC(&X);
     PatchRayCastCostFunction CF3(5);CF3.SetPatchRayCast(&Y);
     PatchRayCastCostFunction CF4(6);CF4.SetPatchRayCast(&Y);
 
@@ -321,9 +321,9 @@ FloatMatrixType Monoplane(DASH &X, PatchRayCast &Y, int method)
 
     if(method == 1)
     {
-        log = Amoeba_DASH(CF1,  250); logs.push_back(log);
+        log = Amoeba_DSC(CF1,  250); logs.push_back(log);
         CF2.SetInit(CF1.GetTransform());
-        log = Amoeba_DASH(CF2,  250); logs.push_back(log);
+        log = Amoeba_DSC(CF2,  250); logs.push_back(log);
         CF3.SetInit(CF2.GetTransform());
         log = Amoeba_PRC(CF3,  250); logs.push_back(log);
         CF4.SetInit(CF3.GetTransform());
@@ -331,9 +331,9 @@ FloatMatrixType Monoplane(DASH &X, PatchRayCast &Y, int method)
     }
     else if( method == 2)
     {
-        log = Powell_DASH(CF1,  2.5); logs.push_back(log);
+        log = Powell_DSC(CF1,  2.5); logs.push_back(log);
         CF2.SetInit(CF1.GetTransform());
-        log = Powell_DASH(CF2,  0.5); logs.push_back(log);
+        log = Powell_DSC(CF2,  0.5); logs.push_back(log);
         CF3.SetInit(CF2.GetTransform());
         log = Powell_PRC(CF3,  0.5); logs.push_back(log);
         CF4.SetInit(CF3.GetTransform());
@@ -341,9 +341,9 @@ FloatMatrixType Monoplane(DASH &X, PatchRayCast &Y, int method)
     }
     else if( method ==3)
     {
-        log = LBFGS_DASH(CF1); logs.push_back(log);
+        log = LBFGS_DSC(CF1); logs.push_back(log);
         CF2.SetInit(CF1.GetTransform());
-        log = LBFGS_DASH(CF2); logs.push_back(log);
+        log = LBFGS_DSC(CF2); logs.push_back(log);
         CF3.SetInit(CF2.GetTransform());
         log = LBFGS_PRC(CF3); logs.push_back(log);
         CF4.SetInit(CF3.GetTransform());
@@ -386,7 +386,7 @@ FloatMatrixType Monoplane(DASH &X, PatchRayCast &Y, int method)
 }
 
 
-FloatMatrixType Amoeba_DASH(DASHCostFunction &cf, int iter)
+FloatMatrixType Amoeba_DSC(DSCCostFunction &cf, int iter)
 {
     vnl_amoeba Minimizer(cf);
 
@@ -402,7 +402,7 @@ FloatMatrixType Amoeba_DASH(DASHCostFunction &cf, int iter)
     return cf.GetHistory();
 }
 
-FloatMatrixType LBFGS_DASH(DASHCostFunction &cf)
+FloatMatrixType LBFGS_DSC(DSCCostFunction &cf)
 {
     vnl_lbfgs Minimizer(cf);
 
@@ -416,7 +416,7 @@ FloatMatrixType LBFGS_DASH(DASHCostFunction &cf)
     return cf.GetHistory();
 }
 
-FloatMatrixType Powell_DASH(DASHCostFunction &cf, double stepsize)
+FloatMatrixType Powell_DSC(DSCCostFunction &cf, double stepsize)
 {
     vnl_powell Minimizer(&cf);
 
