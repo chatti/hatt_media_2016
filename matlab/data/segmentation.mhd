@@ -1,0 +1,14 @@
+ObjectType = Image
+NDims = 3
+BinaryData = True
+BinaryDataByteOrderMSB = False
+CompressedData = False
+TransformMatrix = -1 0 0 0 -1 0 0 0 1
+Offset = 46.4418 35.4685 15.0821
+CenterOfRotation = 0 0 0
+AnatomicalOrientation = LPI
+ElementSpacing = 0.1037 0.1037 0.1037
+ITK_InputFilterName = MetaImageIO
+DimSize = 432 150 146
+ElementType = MET_USHORT
+ElementDataFile = segmentation.raw
