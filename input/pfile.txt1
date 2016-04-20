@@ -1,6 +1,0 @@
-numxrays	1
-camera1	512            512     0.19463084     0.19463084           1200      312.09711              0              0              0              0              0              0
-xrayfilename1	/home/hatt/Dropbox/github/hatt_media_2016/matlab/../input/simxray1.raw
-pointcloudsize	65536
-pointcloudfilename	/home/hatt/Dropbox/github/hatt_media_2016/matlab/../input/pc.raw
-initialtransform	4.611518    -0.9478117      312.0971    -0.5235988             0    -0.2241729
