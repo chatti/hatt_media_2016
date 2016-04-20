@@ -106,8 +106,10 @@ testinfo.ctfilename = [pwd,'/../input/ct.raw'];
 
 load data/drrModel;
 
+
 k=1;
 [drr,testinfo.fiducialsT3D,testinfo.fiducialsT2D,~,~,~,~] = Splat(testinfo.initialTransform, testinfo.secondaryTransform, testinfo.camera{k}, drrModel, fiducials3D,testinfo.box);
+drr=sqrt(drr); %add some contrast
 testinfo.simxray = 1-drr;
                 
 fid = fopen(testinfo.simxrayfilename,'w');
